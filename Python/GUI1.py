@@ -1,4 +1,20 @@
 import tkinter as tk
+import serial 
+import threading
+
+def readSerial():
+    # print("here")
+
+    mpu = serial.Serial('COM3',115200)
+
+    while True:
+        # print("here")
+        line = mpu.readline().decode('utf-8')
+        print(line)
+
+read_serial_thread = threading.Thread(target=readSerial)
+
+read_serial_thread.start()
 
 # Create the main window
 root = tk.Tk()
