@@ -10,7 +10,38 @@ def readSerial():
     while True:
         # print("here")
         line = mpu.readline().decode('utf-8')
-        print(line)
+        # print(type(line))
+
+        a = line.strip().split(',')
+        b=[]
+        for i in a:
+            try:
+                b.append(float(i))
+            except:
+                pass
+        print(b)
+        try:
+            entry_Accelx.delete(0,tk.END)
+            entry_Accelx.insert(0,str(b[0]))
+
+            entry_Accely.delete(0,tk.END)
+            entry_Accely.insert(0,str(b[1]))
+
+            entry_Accelz.delete(0,tk.END)
+            entry_Accelz.insert(0,str(b[2]))
+
+            entry_gx.delete(0,tk.END)
+            entry_gx.insert(0,str(b[3]))
+
+            entry_gy.delete(0,tk.END)
+            entry_gy.insert(0,str(b[4]))
+
+            entry_gz.delete(0,tk.END)
+            entry_gz.insert(0,str(b[5]))
+        except:
+            pass
+
+
 
 read_serial_thread = threading.Thread(target=readSerial)
 
@@ -51,12 +82,12 @@ entry_Accely = tk.Entry(frame_accel, font=("Helvetica Neue", 12), bd=2, width=10
 entry_Accely.grid(row=0, column=3, padx=10)
 entry_Accely.insert(0, "Accely")
 
-label_accel_xz = tk.Label(frame_accel, text="xz", font=("Helvetica Neue", 12), fg="white", bg="#001f3d")
-label_accel_xz.grid(row=0, column=4, padx=10)
+label_accel_z = tk.Label(frame_accel, text="Accelz", font=("Helvetica Neue", 12), fg="white", bg="#001f3d")
+label_accel_z.grid(row=0, column=4, padx=10)
 
-entry_xz = tk.Entry(frame_accel, font=("Helvetica Neue", 12), bd=2, width=10)  # Smaller width
-entry_xz.grid(row=0, column=5, padx=10)
-entry_xz.insert(0, "xz")
+entry_Accelz = tk.Entry(frame_accel, font=("Helvetica Neue", 12), bd=2, width=10)  # Smaller width
+entry_Accelz.grid(row=0, column=5, padx=10)
+entry_Accelz.insert(0, "xz")
 
 # Create the header for Gyro Data
 heading_gyro = tk.Label(root, text="Gyro Data", font=("Helvetica Neue", 18, "bold"), fg="white", bg="#001f3d")

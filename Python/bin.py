@@ -1,2 +1,6 @@
-a = "AccelX:-1.77,AccelY:1.26,AccelZ:9.48,GyroX:-0.02,GyroY:-0.02,GyroZ:-0.02"
-print(a.split(','))
+line = "-0.40,1.26,9.63,-0.03,-0.02,-0.02"
+print(type(line))
+# Step 1: Split the string by comma
+a = line.split(',')
+b = [float(i) for i in a]
+print(b)
