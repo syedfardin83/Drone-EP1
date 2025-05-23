@@ -2,6 +2,9 @@ import tkinter as tk
 import serial 
 import threading
 
+def exit_code():
+    exit()
+
 def readSerial():
     # print("here")
 
@@ -118,6 +121,9 @@ label_gyro_gz.grid(row=0, column=4, padx=10)
 entry_gz = tk.Entry(frame_gyro, font=("Helvetica Neue", 12), bd=2, width=10)  # Smaller width
 entry_gz.grid(row=0, column=5, padx=10)
 entry_gz.insert(0, "Gyro z")
+
+stop_btn = tk.Button(root,text="STOP",bg="red",command=exit_code)
+stop_btn.pack(padx=15,pady=15)
 
 # Run the Tkinter event loop
 root.mainloop()
