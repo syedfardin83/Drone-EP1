@@ -1,6 +1,4 @@
 import serial
-from datetime import datetime
-import pyautogui
 
 mpu = serial.Serial('COM3',115200)
 line = mpu.readline().decode('utf-8')
@@ -27,7 +25,6 @@ def caliberateSensor():
     offsetgx=data[3]
     offsetgy=data[4]
     offsetgz=data[5]
-    print('Caliberation done!')
 
     return [offsetax,offsetay,offsetaz,offsetgx,offsetgy,offsetgz]
 
@@ -57,15 +54,23 @@ def getFilteredData(n):
 
     return [avgax,avgay,avgaz,avggx,avggy,avggz]
     
+
+x=0
+vx=0
+ax=0
 offsets = caliberateSensor()
 
-s=200
-
 while True:
-    data = getFilteredData(10)
-    # print(round(data[1]-offsets[1],1))
+    data = getData()
+    # data = getFilteredData(5)
+    ax=round(data[3],1)
+    # ay=data[1]
+    # az=round(data[2]-round(offsets[2],1),1)
 
-    x,y = pyautogui.position()
+    vx=vx+ax
+    x=x+vx
 
-    pyautogui.moveTo(x-s*round(data[2]-offsets[2],1),y-s*round(data[1]-offsets[1],1))
-    # print(f'Moving x to {x-s*round(data[2]-offsets[2],1)}')
+    # print(z)
+    print(vx)
+    # print(round(az-round(offsets[2],1),1))
+    # print(az)

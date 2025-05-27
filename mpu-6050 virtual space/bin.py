@@ -79,10 +79,10 @@
 # screen dimensions:
 # 1919x1079
 
-# import pyautogui
+import pyautogui
 
-# # Move mouse to coordinates (500, 300)
-# pyautogui.moveTo(0, 0)
+# Move mouse to coordinates (500, 300)
+pyautogui.moveTo(2000, 2000)
 
 #virtual space in z coord:
 
@@ -125,37 +125,37 @@
 # s = pd.Series([1.4,54.34,34.5])
 # print(type(s[0]))
 
-import random
-import math
+# import random
+# import math
 
-def n_avg_filter(n,arr):
-    new_arr = []
+# def n_avg_filter(n,arr):
+#     new_arr = []
 
-    n_sets = int(math.ceil(len(arr)/n))
-    i=1
-    while(i<=n_sets):
-        ll = n*(i-1)
+#     n_sets = int(math.ceil(len(arr)/n))
+#     i=1
+#     while(i<=n_sets):
+#         ll = n*(i-1)
 
-        if i!=n_sets:
-            ul = ll+(n-1)
-        else:
-            ul = len(arr)-1
+#         if i!=n_sets:
+#             ul = ll+(n-1)
+#         else:
+#             ul = len(arr)-1
 
-        sum=0
-        j=ll
-        while(j<=ul):
-            sum=sum+arr[j]
-            j=j+1
+#         sum=0
+#         j=ll
+#         while(j<=ul):
+#             sum=sum+arr[j]
+#             j=j+1
         
-        avg = sum/(ul-ll+1)
+#         avg = sum/(ul-ll+1)
 
-        new_arr.append(round(avg,1))
-        i=i+1
+#         new_arr.append(round(avg,1))
+#         i=i+1
     
-    return new_arr
+#     return new_arr
 
-arr = [random.randint(1,10) for _ in range(random.randint(50,100))]
-# arr = [1,2,3,4,5,6]
-print(arr)
-filtered_arr = n_avg_filter(10,arr)
-print(filtered_arr)
+# arr = [random.randint(1,10) for _ in range(random.randint(50,100))]
+# # arr = [1,2,3,4,5,6]
+# print(arr)
+# filtered_arr = n_avg_filter(10,arr)
+# print(filtered_arr)
