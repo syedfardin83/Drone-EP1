@@ -5,11 +5,14 @@ import threading
 import time
 import serial 
 
-mpu = serial.Serial('COM3', 115200, timeout=1)
-mpu.reset_input_buffer()  # flush any junk
-time.sleep(2)  # give time to stabilize
-# line = mpu.readline().decode('utf-8')
-time.sleep(2)  # give time to stabilize
+# mpu = serial.Serial('COM3', 115200, timeout=1)
+# mpu.reset_input_buffer()  # flush any junk
+# time.sleep(2)  # give time to stabilize
+# # line = mpu.readline().decode('utf-8')
+# time.sleep(2)  # give time to stabilize
+
+mpu = serial.Serial('COM3',115200)
+line = mpu.readline().decode('utf-8')
 
 # this function returns an array
 def getData():
@@ -24,6 +27,10 @@ def getData():
             print(e)
             pass
     return b
+
+def printCont():
+    while True:
+        print(getData())
 
 class RealtimeGraphApp:
     def __init__(self, root):
@@ -132,6 +139,8 @@ class RealtimeGraphApp:
             time.sleep(0.05)
 
 if __name__ == "__main__":
+    print_thread = threading.Thread(target=printCont)
+    print_thread.start()
     root = tk.Tk()
     app = RealtimeGraphApp(root)
     root.mainloop()
