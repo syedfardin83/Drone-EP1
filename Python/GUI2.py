@@ -3,11 +3,27 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 import threading
 import time
+import serial 
 
-# Dummy function to simulate sensor data — replace this with your actual getData()
+mpu = serial.Serial('COM3', 115200, timeout=1)
+mpu.reset_input_buffer()  # flush any junk
+time.sleep(2)  # give time to stabilize
+# line = mpu.readline().decode('utf-8')
+time.sleep(2)  # give time to stabilize
+
+# this function returns an array
 def getData():
-    import random
-    return [random.uniform(-10, 10) for _ in range(6)]
+    line = mpu.readline().decode('utf-8')
+
+    a = line.strip().split(',')
+    b=[]
+    for i in a:
+        try:
+            b.append(float(i))
+        except Exception as e:
+            print(e)
+            pass
+    return b
 
 class RealtimeGraphApp:
     def __init__(self, root):
@@ -96,18 +112,23 @@ class RealtimeGraphApp:
     def update_loop(self):
         while self.running:
             data = getData()
-            for i in range(6):
-                self.graph_data[i].append(data[i])
-                if len(self.graph_data[i]) > self.max_points:
-                    self.graph_data[i].pop(0)
+            print(data)
+            # data = [1,2,3,4,5,6]
+            try:
+                for i in range(6):
+                    self.graph_data[i].append(data[i])
+                    if len(self.graph_data[i]) > self.max_points:
+                        self.graph_data[i].pop(0)
 
-                self.value_labels[i].config(text=f"{data[i]:.2f}")
-                self.scrollbars[i].config(to=max(0, len(self.graph_data[i]) - self.view_width))
+                    self.value_labels[i].config(text=f"{data[i]:.2f}")
+                    self.scrollbars[i].config(to=max(0, len(self.graph_data[i]) - self.view_width))
 
-                if self.auto_scroll:
-                    self.scroll_indices[i] = max(0, len(self.graph_data[i]) - self.view_width)
+                    if self.auto_scroll:
+                        self.scroll_indices[i] = max(0, len(self.graph_data[i]) - self.view_width)
 
-                self.update_graph(i)
+                    self.update_graph(i)
+            except:
+                pass
             time.sleep(0.05)
 
 if __name__ == "__main__":

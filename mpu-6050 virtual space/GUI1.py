@@ -2,27 +2,25 @@ import tkinter as tk
 import serial 
 import threading
 
-def exit_code():
-    exit()
+mpu = serial.Serial('COM3',115200)
+line = mpu.readline().decode('utf-8')
+# this function returns an array
+def getData():
+    line = mpu.readline().decode('utf-8')
 
-def readSerial():
-    # print("here")
+    a = line.strip().split(',')
+    b=[]
+    for i in a:
+        try:
+            b.append(float(i))
+        except Exception as e:
+            print(e)
+            pass
+    return b
 
-    mpu = serial.Serial('COM3',115200)
-
+def updateEntries():
     while True:
-        # print("here")
-        line = mpu.readline().decode('utf-8')
-        # print(type(line))
-
-        a = line.strip().split(',')
-        b=[]
-        for i in a:
-            try:
-                b.append(float(i))
-            except:
-                pass
-        print(b)
+        b = getData()
         try:
             entry_Accelx.delete(0,tk.END)
             entry_Accelx.insert(0,str(b[0]))
@@ -44,11 +42,14 @@ def readSerial():
         except:
             pass
 
+def exit_code():
+    exit()
 
+        
 
-read_serial_thread = threading.Thread(target=readSerial)
+updateEntries = threading.Thread(target=updateEntries)
 
-read_serial_thread.start()
+updateEntries.start()
 
 # Create the main window
 root = tk.Tk()
