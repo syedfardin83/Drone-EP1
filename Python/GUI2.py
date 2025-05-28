@@ -1,14 +1,13 @@
 import tkinter as tk
 from tkinter import ttk
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 import threading
 import time
+import random
 
-# Replace this with your actual MPU6050 reading function
+# Dummy function to simulate sensor data — replace this with your actual getData()
 def getData():
-    import random
     return [random.uniform(-10, 10) for _ in range(6)]
 
 class RealtimeGraphApp:
@@ -16,10 +15,6 @@ class RealtimeGraphApp:
         self.root = root
         self.root.title("MPU6050 Realtime Graphs")
         self.root.configure(bg="#1e1e1e")
-
-        style = ttk.Style()
-        style.theme_use('default')
-        style.configure('.', background='#1e1e1e', foreground='white', font=('Segoe UI', 10))
 
         self.graph_titles = ["AccX", "AccY", "AccZ", "GyroX", "GyroY", "GyroZ"]
         self.graph_colors = ["cyan", "magenta", "yellow", "lime", "orange", "red"]
@@ -39,22 +34,27 @@ class RealtimeGraphApp:
         frame.pack(padx=10, pady=10)
 
         for i in range(6):
+            graph_frame = tk.Frame(frame, bg="#1e1e1e")
+            graph_frame.grid(row=i//3*2, column=i%3, padx=10, pady=10)
+
+            title_label = tk.Label(graph_frame, text=self.graph_titles[i], fg="white", bg="#1e1e1e", font=('Segoe UI', 10))
+            title_label.pack()
+
             fig = Figure(figsize=(2.5, 2), dpi=100)
             ax = fig.add_subplot(111)
             ax.set_facecolor("#2b2b2b")
             ax.tick_params(axis='x', colors='white')
             ax.tick_params(axis='y', colors='white')
-            ax.set_title(self.graph_titles[i], color='white', fontsize=10)
             ax.set_ylim(-20, 20)
-            line, = ax.plot(self.graph_data[i], color=self.graph_colors[i], linewidth=1.5)
+            ax.grid(True, color='gray', linestyle='--', linewidth=0.3)
+            line, = ax.plot(self.graph_data[i], color=self.graph_colors[i], linewidth=1)
 
-            canvas = FigureCanvasTkAgg(fig, master=frame)
-            plot_widget = canvas.get_tk_widget()
-            plot_widget.grid(row=i//3*2, column=i%3, padx=10, pady=(0, 5))
+            canvas = FigureCanvasTkAgg(fig, master=graph_frame)
+            canvas.get_tk_widget().pack()
             canvas.draw()
 
-            value_label = tk.Label(frame, text="0.00", fg="white", bg="#1e1e1e", font=('Segoe UI', 10, 'bold'))
-            value_label.grid(row=i//3*2+1, column=i%3)
+            value_label = tk.Label(graph_frame, text="0.00", fg="white", bg="#1e1e1e", font=('Segoe UI', 9))
+            value_label.pack()
             self.value_labels.append(value_label)
 
             self.figures.append(fig)
