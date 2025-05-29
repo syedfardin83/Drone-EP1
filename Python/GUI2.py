@@ -35,7 +35,7 @@ def printCont():
 class RealtimeGraphApp:
     def __init__(self, root):
         self.root = root
-        self.root.title("MPU6050 Realtime Graphs")
+        self.root.title("Drone EP1 Dashboard")
         self.root.configure(bg="#1e1e1e")
 
         self.graph_titles = ["AccX", "AccY", "AccZ", "GyroX", "GyroY", "GyroZ"]
@@ -57,6 +57,8 @@ class RealtimeGraphApp:
         threading.Thread(target=self.update_loop, daemon=True).start()
 
     def build_ui(self):
+        mpu_heading = tk.Label(root, text="MPU6050 Data",fg="white", bg="#1e1e1e", font=('Segoe UI', 20, 'bold'))
+        mpu_heading.pack(anchor=tk.CENTER)
         frame = tk.Frame(self.root, bg="#1e1e1e")
         frame.pack(padx=10, pady=10)
 
@@ -139,8 +141,8 @@ class RealtimeGraphApp:
             time.sleep(0.05)
 
 if __name__ == "__main__":
-    print_thread = threading.Thread(target=printCont)
-    print_thread.start()
+    # print_thread = threading.Thread(target=printCont)
+    # print_thread.start()
     root = tk.Tk()
     app = RealtimeGraphApp(root)
     root.mainloop()
