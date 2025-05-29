@@ -54,10 +54,12 @@ class App():
         self.canvas.get_tk_widget().pack(fill=BOTH, expand=True)
 
         # update graph after building ui
+        update_arrays_thread = threading.Thread(target=self.updateArrays)
+        update_arrays_thread.start()
         update_graph_thread = threading.Thread(target=self.updateGraphLoop)
         update_graph_thread.start()
 
-    def updateGraphLoop(self):
+    def updateArrays(self):
         i=1
         while True:
             data = self.getSerialData()
@@ -72,12 +74,14 @@ class App():
                 else:
                     self.X_display = self.X[-self.view_length+1:]
                     self.Y_display = self.Y[-self.view_length+1:]
-                # self.X_display = self.X
-                # self.Y_display = self.Y
+            i+=1
+
+    def updateGraphLoop(self):
+        while True:
                 self.ax.clear()
                 self.ax.plot(self.X_display,self.Y_display)
                 self.canvas.draw()
-            i+=1
+
 
 if __name__ == '__main__':
     root = Tk()
