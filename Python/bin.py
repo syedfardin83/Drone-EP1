@@ -10,5 +10,14 @@
 
 # print(b)
 
-a = [2,65,57,23,85]
-print(a[0:2])
+# a = [2,65,57,23,85]
+# print(a[0:2])
+
+# for j in range(6):
+
+#     print(j)
+
+import time
+print('Hi')
+time.sleep(2)
+print('Hola')

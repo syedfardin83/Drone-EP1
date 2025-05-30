@@ -1,6 +1,7 @@
 from tkinter import *
 from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
+from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import numpy as np
 import serial
@@ -44,10 +45,19 @@ class App():
         mpu_heading.pack(anchor=CENTER)
 
 
-        self.fig,self.ax = plt.subplots(figsize=(2, 2))
-        self.ax.set(title="AccX",xlabel='Index',ylabel='m/s^2')
-        self.ax.set_ylim(0,16)
-        self.ax.plot(self.X_display,self.Y_display)
+
+        # self.fig,self.ax = plt.subplots(figsize=(2, 2))
+        # self.ax.set(title="AccX",xlabel='Index',ylabel='m/s^2')
+        # self.ax.set_ylim(0,16)
+        # self.ax.plot(self.X_display,self.Y_display)
+
+        self.fig = Figure(figsize=(2, 2), dpi=100)
+        self.ax = self.fig.add_subplot(111)
+
+        # self.ax.set_facecolor("#2b2b2b")
+        # self.ax.tick_params(axis='x', colors='red', labelsize=6)
+        # self.ax.tick_params(axis='y', colors='red', labelsize=6)
+        self.ax.set_ylim(-20, 20)
 
         self.canvas = FigureCanvasTkAgg(self.fig, master=root)
         self.canvas.draw()
