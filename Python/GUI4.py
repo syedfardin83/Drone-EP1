@@ -24,6 +24,9 @@ class RealtimeGraphApp:
         self.value_labels = []
         self.lines = []
         self.canvases = []
+
+        self.linewidth=0.8
+
         self.running = True
 
         self.mpu = serial.Serial('COM3',115200)
@@ -123,7 +126,7 @@ class RealtimeGraphApp:
         while self.running:
             for j in range(6):
                 self.axes[j].clear()
-                self.axes[j].plot(self.display_indices,self.display_data[j],color="magenta")
+                self.axes[j].plot(self.display_indices,self.display_data[j],color=self.graph_colors[j],linewidth=self.linewidth)
                 self.canvases[j].draw()
 
                 self.value_labels[j].config(text=str(self.data[j][-1]))

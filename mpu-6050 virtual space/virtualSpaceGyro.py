@@ -1,4 +1,6 @@
 import serial
+import time
+import math
 
 mpu = serial.Serial('COM3',115200)
 line = mpu.readline().decode('utf-8')
@@ -55,22 +57,30 @@ def getFilteredData(n):
     return [avgax,avgay,avgaz,avggx,avggy,avggz]
     
 
-x=0
+z=0
 vx=0
 ax=0
+last_time = 0
 offsets = caliberateSensor()
 
 while True:
-    data = getData()
-    # data = getFilteredData(5)
-    ax=round(data[3],1)
-    # ay=data[1]
-    # az=round(data[2]-round(offsets[2],1),1)
+    data = getFilteredData(5)
+    current_time = time.time()
+    dt = current_time - last_time
+    last_time = current_time
 
-    vx=vx+ax
-    x=x+vx
-
-    # print(z)
-    print(vx)
+    # PROPER EULER INTEGRATION
+    # # data = getFilteredData(5)
+    # ax=round(data[3],1)
+    # # ay=data[1]
+    # # az=round(data[2]-round(offsets[2],1),1)
+    # vx=vx+ax
+    # x=x+vx
+    # # print(z)
+    # print(vx)
     # print(round(az-round(offsets[2],1),1))
     # print(az)
+
+    # gyro y data
+    z+=(data[4]-offsets[4])*dt
+    print(f'Angle is {math.degrees(z)}')
