@@ -14,6 +14,8 @@ class App:
 
         self.orient = 1
 
+        self.alpha = 0.98
+
         self.x11 = 100
         self.y11  = 100
         self.len1 = 100
@@ -26,6 +28,15 @@ class App:
         self.color2 = 'green'
         self.width2 =  2
 
+        self.x13 = 600
+        self.y13  = 100
+        self.len3 = 100
+        self.color3 = 'red'
+        self.width3 =  2
+
+        self.accAngle = 0
+        self.gyroAngle = 0
+
         self.buil_ui()
         self.caliberateSensor()
 
@@ -35,6 +46,7 @@ class App:
         time.sleep(0.5)
         threading.Thread(target=self.updateLine1).start()
         threading.Thread(target=self.updateLine2).start()
+        threading.Thread(target=self.updateLine3).start()
 
     def getSerialData(self):
         line = self.mpu.readline().decode('utf-8')
@@ -110,6 +122,7 @@ class App:
     def updateLine1(self):
         while self.running:
             a = self.getAccPitch()
+            self.accAngle = a
             # self.canvas.delete("all")
             x2,y2 = self.giveP2(self.x11,self.y11,-a,self.len1)
             # canvas.create_oval()
@@ -127,10 +140,20 @@ class App:
 
             z+=(self.data[-1][4]-self.offsetgy)*dt
             # print(f'Angle is {math.degrees(z)}')
+            self.gyroAngle = z
+            # print(f'gyro angle is {z}')
             x2,y2 = self.giveP2(self.x12,self.y12,-z,self.len2)
             # self.canvas.delete("all")
             # self.canvas.create_line(self.x12,self.y12,x2,y2,fill=self.color2, width=self.width2)
             self.canvas.coords(self.line2,self.x12,self.y12,x2,y2)
+
+    def updateLine3(self):
+        # print('here')
+        while True:
+            compAngle = self.alpha*self.gyroAngle+((1-self.alpha)*self.accAngle)
+            x2,y2 = self.giveP2(self.x13,self.y13,-compAngle,self.len3)
+            self.canvas.coords(self.line3,self.x13,self.y13,x2,y2)
+            # print(f'Comp angle is {compAngle}')
 
     #a = angle from y axis(of tkinter) in anti clockwise direction, l is length of line.
     def giveP2(self,x1,y1,a,l):
@@ -146,20 +169,20 @@ class App:
 
     def buil_ui(self):
         self.root.title("Filters Visualization")
-        self.canvas = tk.Canvas(self.root, width=400, height=400, bg="white")
+        self.canvas = tk.Canvas(self.root, width=700, height=400, bg="white")
         self.canvas.pack()
 
         self.line1 = self.canvas.create_line(0,0,0,0,fill=self.color1, width=self.width1)
         self.line2 = self.canvas.create_line(0,0,0,0,fill=self.color2, width=self.width2)
+        self.line3 = self.canvas.create_line(0,0,0,0,fill=self.color3, width=self.width3)
 
         self.canvas.create_text(self.x11,self.y11-10,text="Using Accelerometer",font=('Segoe UI', 10),fill=self.color1)
         self.canvas.create_text(self.x12,self.y12-10,text="Using Gyroscope",font=('Segoe UI', 10),fill=self.color2)  
+        self.canvas.create_text(self.x13,self.y13-10,text="Complementary filter",font=('Segoe UI', 10),fill=self.color3)  
 
         stop_btn = tk.Button(root,text="STOP",bg='red',command=self.stop_code)
         # stop_btn.pack()
         
-
-
 if __name__ == "__main__":
     root = tk.Tk()
     app = App(root)

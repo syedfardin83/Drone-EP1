@@ -19,9 +19,47 @@ def getSerialData():
             pass
     return b
 
-#orient = 0 if ax is g
-#orient = 1 if ay is g
-#orient = 2 if az is g
+def getFilteredData(n):
+    i=1
+    sumax=0
+    sumay=0
+    sumaz=0
+    sumgx=0
+    sumgy=0
+    sumgz=0
+    while(i<=n):
+        data=getSerialData()
+        sumax+=data[0]
+        sumay+=data[1]
+        sumaz+=data[2]
+        sumgx+=data[3]
+        sumgy+=data[4]
+        sumgz+=data[5]
+        i+=1
+    avgax=sumax/n
+    avgay=sumay/n
+    avgaz=sumaz/n
+    avggx=sumgx/n
+    avggy=sumgy/n
+    avggz=sumgz/n
+
+    return [avgax,avgay,avgaz,avggx,avggy,avggz]
+
+def caliberateSensor():
+    print('Caliberating sensor, make sure your sensor is at rest...')
+    data = getSerialData()
+    offsetax=data[0]
+    offsetay=data[1]
+    offsetaz=data[2]
+    offsetgx=data[3]
+    offsetgy=data[4]
+    offsetgz=data[5]
+
+    return [offsetax,offsetay,offsetaz,offsetgx,offsetgy,offsetgz]
+
+#orient = 1 if ax is g
+#orient = 2 if ay is g
+#orient = 3 if az is g
 
 def getAccPitch(data,orient):
     if orient==3:
@@ -33,6 +71,11 @@ def getAccPitch(data,orient):
             print('Perp')
             return math.pi/2
         return math.atan(data[2]/data[0])
-    
+
+offsets = caliberateSensor()
+last_time = 0
 while True:
-    print(f'Pitch angle = {math.degrees(getAccPitch(getSerialData(),1))}')
+    #first acc data
+    data = getFilteredData(5)
+    accAngle = getAccPitch(data,1)
+    print(accAngle)
