@@ -1,5 +1,5 @@
-MPU6050  Pin	Connect To
-VCC	    5V on Arduino Uno
-GND	    GND
-SDA	    A4
-SCL	    A5
+MPU6050     Arduino Uno
+VCC	     5V 
+GND	     GND
+SDA	     A4
+SCL	     A5

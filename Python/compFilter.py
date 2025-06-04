@@ -1,5 +1,6 @@
 import serial
 import math
+import time
 
 mpu = serial.Serial('COM3',115200)
 line1 = mpu.readline().decode('utf-8')
@@ -78,4 +79,4 @@ while True:
     #first acc data
     data = getFilteredData(5)
     accAngle = getAccPitch(data,1)
-    print(accAngle)
+    
