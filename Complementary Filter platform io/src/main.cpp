@@ -143,7 +143,7 @@ void loop() {
     I_terms[i] = I_terms[i]+I*current_errors[i]*dt;
     D_terms[i] = (current_errors[i]-prev_errors[i])/dt;
 
-    rate_inputs[i] = -(P_terms[i]+I_terms[i]);
+    rate_inputs[i] = -(P_terms[i]);
   }
 
   //Calculate motor inputs:
@@ -154,13 +154,13 @@ void loop() {
 
   Serial.println(motor_inputs[0]);
 
-  //Send motor signals
-  // for(int i=0;i<4;i++){
-  //   if(motor_pins[i]<=0){
-  //     analogWrite(motor_pins[i],0);
-  //   }
-  //   analogWrite(motor_pins[i],motor_inputs[i]);
-  // }
+  // Send motor signals
+  for(int i=0;i<4;i++){
+    if(motor_pins[i]<=0){
+      analogWrite(motor_pins[i],0);
+    }
+    analogWrite(motor_pins[i],motor_inputs[i]);
+  }
 
   //assign prev errors:
   for(int i=0;i<3;i++){
