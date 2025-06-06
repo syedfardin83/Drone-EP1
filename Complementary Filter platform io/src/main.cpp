@@ -9,6 +9,8 @@ Adafruit_MPU6050 mpu;
 double* offsets;
 double* data;
 
+int motor_pins[4] = {9,5,6,3};
+
 double* getData(){
   /* Get new sensor events with the readings */
   sensors_event_t a, g, temp;
@@ -69,7 +71,6 @@ double getRateFromAcc(int axis){
   return rate;
 }
 
-
 void setup(void) {
 
   // Reading mpu6050
@@ -91,15 +92,80 @@ void setup(void) {
 
   Serial.println("Calibertaing sensors. Make sure drone is at rest.");
   offsets = calliberateSensor();
+
+  //Setup Motors
+  pinMode(motor_pins[0],OUTPUT);
+  pinMode(motor_pins[1],OUTPUT);
+  pinMode(motor_pins[2],OUTPUT);
+  pinMode(motor_pins[3],OUTPUT);
 }
 
-void loop() {
+  //motor input
+double throttle = 0.2;
+double desired_rates[3] = {0,0,0};
+double rate_inputs[3] = {0,0,0};
+int motor_inputs[4] = {0,0,0,0};
 
+double current_errors[3] = {0,0,0};
+double prev_errors[3] = {0,0,0};
+
+//time variables
+unsigned long previous_time = 0;
+unsigned long current_time = 0;
+double dt;
+
+//PID constants:
+double P=0.08;
+double I=0.01;
+double D=0.01;
+
+//PID terms:
+double P_terms[3] = {0,0,0};
+double I_terms[3] = {0,0,0};
+double D_terms[3] = {0,0,0};
+
+void loop() {
+  previous_time = micros();
   //Update data
   data = getFilteredData(5);
 
-  // print gyro x
-  Serial.println(data[3]-offsets[3]); 
+  current_time = micros(); 
+  dt = (current_time-previous_time)*pow(10,-6);
+
+  // find current errors:
+  for(int i=0;i<3;i++){
+    current_errors[i] = data[i+3]-offsets[i+3]-desired_rates[i];
+  }
+
+  //Find rate inputs:
+  for(int i=0;i<3;i++){
+    P_terms[i] = P*current_errors[i];
+    I_terms[i] = I_terms[i]+I*current_errors[i]*dt;
+    D_terms[i] = (current_errors[i]-prev_errors[i])/dt;
+
+    rate_inputs[i] = -(P_terms[i]+I_terms[i]);
+  }
+
+  //Calculate motor inputs:
+  motor_inputs[0] = (throttle-rate_inputs[0]+rate_inputs[1]+rate_inputs[2])*255;
+  motor_inputs[1] = (throttle-rate_inputs[0]-rate_inputs[1]-rate_inputs[2])*255;
+  motor_inputs[2] = (throttle+rate_inputs[0]-rate_inputs[1]+rate_inputs[2])*255;
+  motor_inputs[3] = (throttle+rate_inputs[0]+rate_inputs[1]-rate_inputs[2])*255;
+
+  Serial.println(motor_inputs[0]);
+
+  //Send motor signals
+  // for(int i=0;i<4;i++){
+  //   if(motor_pins[i]<=0){
+  //     analogWrite(motor_pins[i],0);
+  //   }
+  //   analogWrite(motor_pins[i],motor_inputs[i]);
+  // }
+
+  //assign prev errors:
+  for(int i=0;i<3;i++){
+    prev_errors[i] = current_errors[i];
+  }
 
   delay(10);
 }
