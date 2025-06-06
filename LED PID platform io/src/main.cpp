@@ -147,20 +147,20 @@ void loop() {
   }
 
   //Calculate motor inputs:
-  motor_inputs[0] = (throttle-rate_inputs[0]+rate_inputs[1]+rate_inputs[2])*255;
-  motor_inputs[1] = (throttle-rate_inputs[0]-rate_inputs[1]-rate_inputs[2])*255;
-  motor_inputs[2] = (throttle+rate_inputs[0]-rate_inputs[1]+rate_inputs[2])*255;
-  motor_inputs[3] = (throttle+rate_inputs[0]+rate_inputs[1]-rate_inputs[2])*255;
+  motor_inputs[0] = (throttle-rate_inputs[0]-rate_inputs[1]+rate_inputs[2])*255;
+  motor_inputs[1] = (throttle-rate_inputs[0]+rate_inputs[1]-rate_inputs[2])*255;
+  motor_inputs[2] = (throttle+rate_inputs[0]+rate_inputs[1]+rate_inputs[2])*255;
+  motor_inputs[3] = (throttle+rate_inputs[0]-rate_inputs[1]-rate_inputs[2])*255;
 
   Serial.println(motor_inputs[0]);
 
   // Send motor signals
-  for(int i=0;i<4;i++){
-    if(motor_pins[i]<=0){
-      analogWrite(motor_pins[i],0);
-    }
-    analogWrite(motor_pins[i],motor_inputs[i]);
-  }
+  // for(int i=0;i<4;i++){
+  //   if(motor_pins[i]<=0){
+  //     analogWrite(motor_pins[i],0);
+  //   }
+  //   analogWrite(motor_pins[i],motor_inputs[i]);
+  // }
 
   //assign prev errors:
   for(int i=0;i<3;i++){
