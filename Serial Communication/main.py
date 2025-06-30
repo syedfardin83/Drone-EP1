@@ -1,15 +1,17 @@
 import serial
 import time
 
-# Initialize serial connection
-arduino = serial.Serial('COM3', 9600, timeout=1)  # Replace 'COM3' with your port
-time.sleep(2)  # Wait for Arduino to initialize
+# Connect to Arduino
+arduino = serial.Serial('COM3', 9600, timeout=1)
+time.sleep(2)  # Allow Arduino to reset
 
-try:
-    while True:
-        user_input = input("Enter data to send: ")  # User types a message
-        arduino.write(f"{user_input}\n".encode())  # Send with newline
+# Send command
+arduino.write(b"TURN_OFF_LED\n")
+time.sleep(0.1)  # Give Arduino time to respond
 
-except KeyboardInterrupt:
-    print("Closing...")
-    arduino.close()
+# Read response
+if arduino.in_waiting:
+    response = arduino.readline().decode().strip()
+    print("Arduino:", response)
+
+arduino.close()
