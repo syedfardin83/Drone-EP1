@@ -6,7 +6,7 @@ time.sleep(2)
 
 command = "100\n"
 
-arduino.write(b"1\n")
+arduino.write(b"10\n")
 time.sleep(0.1)  # Give Arduino time to respond
 
 # Read response
