@@ -1,4 +1,5 @@
 MPU6050     Arduino Uno
+
 VCC	     5V 
 GND	     GND
 SDA	     A4
