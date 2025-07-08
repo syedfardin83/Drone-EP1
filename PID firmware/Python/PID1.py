@@ -12,6 +12,7 @@ class App:
         self.check_sensor()
         
         self.offsets = [0,0,0,0,0,0]
+        self.desired_gyro = [0,0,0]
 
         #mpu6050 data
         self.filtered_data = []
