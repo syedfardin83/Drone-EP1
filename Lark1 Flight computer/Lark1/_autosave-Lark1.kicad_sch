@@ -1486,6 +1486,16 @@
 	)
 	(wire
 		(pts
+			(xy 156.21 91.44) (xy 160.02 91.44)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "18fb4c8b-a644-496c-882d-9905e3cf6bea")
+	)
+	(wire
+		(pts
 			(xy 29.21 29.21) (xy 29.21 30.48)
 		)
 		(stroke
@@ -1493,6 +1503,26 @@
 			(type default)
 		)
 		(uuid "1a6ebf93-145d-4d43-b049-3213b75d27c2")
+	)
+	(wire
+		(pts
+			(xy 187.96 71.12) (xy 199.39 71.12)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "1b35579f-a31b-4f09-b202-af1666147d96")
+	)
+	(wire
+		(pts
+			(xy 187.96 66.04) (xy 199.39 66.04)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "27f68690-0758-4ad2-95d7-f6406db4eaca")
 	)
 	(wire
 		(pts
@@ -1506,6 +1536,16 @@
 	)
 	(wire
 		(pts
+			(xy 187.96 68.58) (xy 199.39 68.58)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "70a8eadb-6a19-4b8e-89e4-cd60dd423595")
+	)
+	(wire
+		(pts
 			(xy 41.91 27.94) (xy 43.18 27.94)
 		)
 		(stroke
@@ -1513,6 +1553,16 @@
 			(type default)
 		)
 		(uuid "85556f67-d498-47e3-a7cc-2220f4bdc687")
+	)
+	(wire
+		(pts
+			(xy 187.96 63.5) (xy 199.39 63.5)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "93585ecb-08f5-4f65-9fe3-fe85a6f18da3")
 	)
 	(wire
 		(pts
@@ -1553,6 +1603,16 @@
 			(type default)
 		)
 		(uuid "eb877541-dd3d-4ee7-a699-46427b3202f6")
+	)
+	(wire
+		(pts
+			(xy 187.96 45.72) (xy 191.77 45.72)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "f613d283-8a34-4b59-b6b3-eff54ce2aa40")
 	)
 	(symbol
 		(lib_id "power:+3.3V")
@@ -1681,6 +1741,73 @@
 			(project ""
 				(path "/a84a7224-76e4-40e2-8bf9-090e2c588692"
 					(reference "#PWR01")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 191.77 45.72 90)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "6f45327f-fcca-40fa-924c-662700c3ffd9")
+		(property "Reference" "#PWR04"
+			(at 198.12 45.72 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 195.58 45.7199 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Footprint" ""
+			(at 191.77 45.72 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 191.77 45.72 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 191.77 45.72 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "6dbe803e-0ae4-4e46-b9b2-1b71de24e8eb")
+		)
+		(instances
+			(project ""
+				(path "/a84a7224-76e4-40e2-8bf9-090e2c588692"
+					(reference "#PWR04")
 					(unit 1)
 				)
 			)
@@ -1921,6 +2048,72 @@
 			(project ""
 				(path "/a84a7224-76e4-40e2-8bf9-090e2c588692"
 					(reference "#FLG01")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:+3.3V")
+		(at 156.21 91.44 90)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "c440f3c5-f6ff-4c76-aeac-c4971b50d84e")
+		(property "Reference" "#PWR03"
+			(at 160.02 91.44 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "+3.3V"
+			(at 154.94 93.472 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" ""
+			(at 156.21 91.44 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 156.21 91.44 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"+3.3V\""
+			(at 156.21 91.44 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "20876e90-b29b-493d-a4a3-af5f614e4959")
+		)
+		(instances
+			(project "Lark1"
+				(path "/a84a7224-76e4-40e2-8bf9-090e2c588692"
+					(reference "#PWR03")
 					(unit 1)
 				)
 			)

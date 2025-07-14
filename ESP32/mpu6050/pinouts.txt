@@ -1,0 +1,6 @@
+MPU6050     ESP32
+
+VCC	     3.3v
+GND	     GND
+SDA	     21
+SCL	     22
