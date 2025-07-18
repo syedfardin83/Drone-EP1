@@ -12,49 +12,63 @@
 #include <Wire.h>
 #include <math.h>
 
-//Software Objects
+// Software Objects
 BluetoothSerial SerialBT;
 Adafruit_MPU6050 mpu;
 
-
-//Motor pins
+// Motor pins
 int MOTOR_PINS[4] = NULL;
 
-//Sensot orientation
+// Sensor orientation
 #define orientation NULL
 
-//Indicator Pins
+// Indicator Pins
 #define LED_R_PIN NULL
 #define LED_G_PIN NULL
 #define LED_B_PIN NULL
 #define BUZZER_PIN NULL
 
-//MPU6050 pins
+// MPU6050 pins
 #define SCL_PIN NULL
 #define SDA_PIN NULL
 
-//Test button
+// Test button
 #define BTN_PIN NULL
 
-
-//Bluetooth name
+// Bluetooth name
 #define bt_name "LOS 1.1"
 
-//Serial reading variables
+// Serial reading variables
 String inputString = "";
 bool stringEnd = false;
 
-//Drone control variables
+// Drone control variables
 double desiredAngles[3] = {0,0,0};
+int desiredThrottle = 0;
+int throttle = 0;
 double currentAngles[3] = {0,0,0};
 double* offsets;
 double* data;
 double integratedAngles[3] = {0,0,0};
+double accAngles[3] = {0,0,0};
+double alpha = 0.98;
 
-//Time variables
+// Time variables
 unsigned long previous_time = 0;
 unsigned long current_time = 0;
 double dt;
+
+// PID variables
+double P,I,D;
+double P_terms[3] = {0,0,0};
+double I_terms[3] = {0,0,0};
+double D_terms[3] = {0,0,0};
+double current_errors[3] = {0,0,0};
+double previous_errors[3] = {0,0,0};
+double rate_outputs[3] = {0,0,0};
+
+// Motor inputs
+int motor_inputs[4] = {0,0,0,0};
 
 double* getData(){
   /* Get new sensor events with the readings */
@@ -192,20 +206,70 @@ void loop() {
         for(int i=0;i<3;i++){
           desiredAngles[i] = command[i].toDouble();
         }
+        desiredThrottle = command[3];
 
         inputString = "";
         stringEnd = false;
   }
 
-  //Read Sensor data
+  // Read Sensor data
   current_time = micros();
   data = getFilteredData(5);
 
-  //Calculate angles
+
+  // Calculate angles
+
+
   dt = (current_time-previous_time)*pow(10,-6);
+  //Integrated Angles
   for(int i=0;i<3;i++){
     integratedAngles[i]+=dt*(data[i+3]-offsets[i+3]);
   }
+  //Angles from triginometry/Acceletration
+  if(orientation == 2){
+    accAngles[2] = atan(data[1]/data[0]);
+    accAngles[1] = atan(data[2]/data[0]);
+    accAngles[0] = integratedAngles[0];
+  }
+  //Complementary filter
+  for(int i=0; i<3; i++){
+    currentAngles[i] = alpha*integratedAngles[i] + (1-aplha)*accAngles[i];
+  }
 
 
+  // PID control
+
+  // Finding errors in angles
+  for(int i =0;i<3;i++){
+    current_errors[i] = currentAngles[i]-desiredAngles[i];
+  }
+
+  // Find rate outputs:
+  for(int i=0;i<3;i++){
+    P_terms[i] = P*current_errors[i];
+    I_terms[i] = I_terms[i]+I*current_errors[i]*dt;
+    D_terms[i] = (current_errors[i]-prev_errors[i])/dt;
+
+    rate_outputs[i] = P_terms[i]+I_terms[i]+D_terms[i];
+  }
+  throttle += desiredThrottle;
+
+  //calculate motor inputs
+  motor_inputs[0] = (throttle-rate_inputs[0]-rate_inputs[1]+rate_inputs[2])*255;
+  motor_inputs[1] = (throttle-rate_inputs[0]+rate_inputs[1]-rate_inputs[2])*255;
+  motor_inputs[2] = (throttle+rate_inputs[0]+rate_inputs[1]+rate_inputs[2])*255;
+  motor_inputs[3] = (throttle+rate_inputs[0]-rate_inputs[1]-rate_inputs[2])*255;
+
+  //Give motor inputs
+  for(int i=0;i<4;i++){
+    if(motor_pins[i]<0){
+      analogWrite(motor_pins[i],0);
+    }
+    else if(motor_pins[i]>255){
+      analogWrite(motor_pins[i],255);
+    }
+    analogWrite(motor_pins[i],motor_inputs[i]);
+  }
+
+  previous_time = current_time;
 }
