@@ -13,6 +13,7 @@ void setup(void) {
   }
 
   // Try to initialize!
+  Wire.begin(25,26); // Replace with your desired SDA, SCL pins
   if (!mpu.begin()) {
     Serial.println("Failed to find MPU6050 chip");
     while (1) {
