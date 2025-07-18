@@ -20,7 +20,7 @@ Adafruit_MPU6050 mpu;
 int MOTOR_PINS[4] = NULL;
 
 // Sensor orientation
-#define orientation NULL
+#define orientation 2
 
 // Indicator Pins
 #define LED_R_PIN NULL
@@ -113,24 +113,13 @@ double* getFilteredData(int n){
 double* calliberateSensor(){
   static double offsets[6];
   static double* data;
-  data = getData();
+  data = getFilteredData(5);
 
   for(int i=0; i<6; i++){
     offsets[i] = data[i];
   }
 
   return offsets;
-}
-
-double getRateFromAcc(){
-  double rate;
-  if(orientation==1){
-    rate = atan(data[0]/data[2]);
-  }
-  if(orientation==2){
-    rate = atan(data[1]/data[0]);
-  }
-  return rate;
 }
 
 String* splitBySpace(String str){
@@ -233,7 +222,7 @@ void loop() {
   }
   //Complementary filter
   for(int i=0; i<3; i++){
-    currentAngles[i] = alpha*integratedAngles[i] + (1-aplha)*accAngles[i];
+    currentAngles[i] = alpha*integratedAngles[i] + (1-alpha)*accAngles[i];
   }
 
 
@@ -248,7 +237,7 @@ void loop() {
   for(int i=0;i<3;i++){
     P_terms[i] = P*current_errors[i];
     I_terms[i] = I_terms[i]+I*current_errors[i]*dt;
-    D_terms[i] = (current_errors[i]-prev_errors[i])/dt;
+    D_terms[i] = (current_errors[i]-previous_errors[i])/dt;
 
     rate_outputs[i] = P_terms[i]+I_terms[i]+D_terms[i];
   }
@@ -262,14 +251,14 @@ void loop() {
 
   //Give motor inputs
   for(int i=0;i<4;i++){
-    if(motor_pins[i]<0){
+    if(motor_inputs[i]<0){
       analogWrite(motor_pins[i],0);
     }
-    else if(motor_pins[i]>255){
+    else if(motor_inputs[i]>255){
       analogWrite(motor_pins[i],255);
     }
     analogWrite(motor_pins[i],motor_inputs[i]);
   }
-
+  previous_errors = current_errors;
   previous_time = current_time;
 }
