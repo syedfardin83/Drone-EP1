@@ -59,7 +59,7 @@ unsigned long current_time = 0;
 double dt;
 
 // PID variables
-double P=0.05,I=0.01,D=0.01;
+double P=0.001,I=0.01,D=0.01;
 double P_terms[3] = {0,0,0};
 double I_terms[3] = {0,0,0};
 double D_terms[3] = {0,0,0};
