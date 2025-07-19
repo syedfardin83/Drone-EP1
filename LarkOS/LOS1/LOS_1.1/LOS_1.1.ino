@@ -44,8 +44,8 @@ bool stringEnd = false;
 
 // Drone control variables
 double desiredAngles[3] = {0,0,0};
-double throttleInput = 0;
-double throttle = 0.7;
+double throttleIncrement = 0;
+double throttle = 0;
 double currentAngles[3] = {0,0,0};
 double* offsets;
 double* data;
@@ -59,7 +59,7 @@ unsigned long current_time = 0;
 double dt;
 
 // PID variables
-double P=0.1,I=0.01,D=0.01;
+double P=0.05,I=0.01,D=0.01;
 double P_terms[3] = {0,0,0};
 double I_terms[3] = {0,0,0};
 double D_terms[3] = {0,0,0};
@@ -195,7 +195,7 @@ void loop() {
         for(int i=0;i<3;i++){
           desiredAngles[i] = command[i].toDouble();
         }
-        throttleInput = command[3].toDouble();
+        throttleIncrement = command[3].toDouble();
 
         inputString = "";
         stringEnd = false;
@@ -242,7 +242,8 @@ void loop() {
   for(int i =0;i<3;i++){
     current_errors[i] = currentAngles[i]-desiredAngles[i];
   }
-  throttle+=throttleInput;
+  throttle+=throttleIncrement;
+  throttleIncrement = 0;
 
   // // Find rate outputs:
   for(int i=0;i<3;i++){
