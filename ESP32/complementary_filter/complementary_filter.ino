@@ -70,7 +70,7 @@ double getRateFromAcc(int axis){
     rate = atan(data[0]/data[2]);
   }
   if(axis==2){
-    rate = atan(data[1]/data[0]);
+    rate = atan(data[2]/data[0]);
   }
   return rate;
 }
@@ -110,15 +110,18 @@ void loop() {
    
   dt = (current_time-previous_time)*pow(10,-6);
 
-  z+=dt*(data[5]-offsets[5]);
+  z+=dt*(data[3]-offsets[3]);
   
 
   double accAngle = getRateFromAcc(2);
   // Serial.println(degrees(accAngle));
-  double angle = -0.98*z+0.02*accAngle;
-  Serial.println(degrees(angle));
+  double angle = -0.98*z+0.02*z;
+  Serial.print(degrees(accAngle));
+  Serial.print("  ");
+  Serial.print(degrees(z));
   previous_time = current_time;
   delay(10);
+  Serial.println("");
 }
 
 
