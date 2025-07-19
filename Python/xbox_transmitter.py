@@ -58,7 +58,7 @@ while True:
         str += f"{value} "
     str += "\n"
     esp32.write(str.encode('utf-8'))  # Send values to esp32
-    time.sleep(0.1)  # Give esp32 time to process
+    time.sleep(0.05)  # Give esp32 time to process
     print(values)
 
     j += 1

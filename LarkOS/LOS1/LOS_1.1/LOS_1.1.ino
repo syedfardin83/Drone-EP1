@@ -59,7 +59,7 @@ unsigned long current_time = 0;
 double dt;
 
 // PID variables
-double P=0.001,I=0.01,D=0.01;
+double P=0.09,I=0.01,D=0.01;
 double P_terms[3] = {0,0,0};
 double I_terms[3] = {0,0,0};
 double D_terms[3] = {0,0,0};
@@ -189,11 +189,20 @@ void loop() {
   }
   if(stringEnd){
         inputString.trim();
+        if(inputString=="STOP"){
+          Serial.println("Emergency stop protocol initiated !!!");
+          for(int i=0;i<4;i++){
+            analogWrite(motor_pins[i],0);
+          }
+          while(1){
+
+          }
+        }
         String* command = splitBySpace(inputString);
 
         //Update desired angles
         for(int i=0;i<3;i++){
-          desiredAngles[i] = command[i].toDouble();
+          desiredAngles[i] = radians(command[i].toDouble());
         }
         throttleIncrement = command[3].toDouble();
 
@@ -238,12 +247,14 @@ void loop() {
 
     // PID control
 
+    
+    throttle+=throttleIncrement;
+    throttleIncrement = 0;
+
     // Finding errors in angles
     for(int i =0;i<3;i++){
       current_errors[i] = currentAngles[i]-desiredAngles[i];
     }
-    throttle+=throttleIncrement;
-    throttleIncrement = 0;
 
     // // Find rate outputs:
     for(int i=0;i<3;i++){
@@ -253,7 +264,10 @@ void loop() {
 
       // rate_outputs[i] = P_terms[i]+I_terms[i]+D_terms[i];
       rate_outputs[i] = P_terms[i];
+      // Serial.print(rate_outputs[i]);
+      // Serial.print(" ");
     }
+    // Serial.println("");
     //calculate motor inputs
     motor_inputs[0] = (throttle-rate_outputs[0]-rate_outputs[1]+rate_outputs[2])*255;
     motor_inputs[1] = (throttle-rate_outputs[0]+rate_outputs[1]-rate_outputs[2])*255;
@@ -273,9 +287,12 @@ void loop() {
     }
     Serial.println("");
 
-
+    // Serial.print("Errors: ");
     for(int i=0;i<3;i++){
+      // Serial.print(current_errors[i]);
+      // Serial.print(" ");
       previous_errors[i] = current_errors[i];
     }
+    // Serial.println("");
     previous_time = current_time;
 }
