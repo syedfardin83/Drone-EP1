@@ -4,7 +4,7 @@ import serial
 import time
 
 # Connect to esp32
-esp32 = serial.Serial('COM6', 115200, timeout=1)
+esp32 = serial.Serial('COM5', 115200, timeout=1)
 time.sleep(0.2)  # Allow esp32 to reset
 
 # Initialize pygame and joystick module
@@ -58,7 +58,7 @@ while True:
         str += f"{value} "
     str += "\n"
     esp32.write(str.encode('utf-8'))  # Send values to esp32
-    time.sleep(0.05)  # Give esp32 time to process
-    print(values)
+    time.sleep(0.1)  # Give esp32 time to process
+    print(str)
 
     j += 1

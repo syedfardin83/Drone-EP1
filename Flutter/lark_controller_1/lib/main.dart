@@ -24,11 +24,11 @@ class LarkControllerApp extends StatelessWidget {
           surface: Color(0xFF121212),
           background: Color(0xFF0A0A0A),
         ),
-        textTheme: GoogleFonts.orbitronTextTheme(ThemeData.dark().textTheme),
+        textTheme: ThemeData.dark().textTheme,
         appBarTheme: AppBarTheme(
           backgroundColor: const Color(0xFF1A1A1A),
           foregroundColor: Colors.white,
-          titleTextStyle: GoogleFonts.orbitron(
+          titleTextStyle: const TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
             color: Colors.white,

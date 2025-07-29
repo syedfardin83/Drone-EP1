@@ -24,13 +24,13 @@ int motor_pins[4] = {12,13,14,27};
 
 // Indicator Pins
 #define LED_R_PIN NULL
-#define LED_G_PIN NULL
-#define LED_B_PIN NULL
+#define LED_G_PIN 22
+#define LED_B_PIN 23
 #define BUZZER_PIN NULL
 
 // MPU6050 pins
-#define SCL_PIN 26
-#define SDA_PIN 25
+#define SCL_PIN 17
+#define SDA_PIN 26
 
 // Test button
 #define BTN_PIN NULL
@@ -147,7 +147,7 @@ void setup() {
     pinMode(motor_pins[i],OUTPUT);
   }
 
-  pinMode(LED_R_PIN,OUTPUT);
+  // pinMode(LED_R_PIN,OUTPUT);
   pinMode(LED_G_PIN,OUTPUT);
   pinMode(LED_B_PIN,OUTPUT);
   pinMode(BUZZER_PIN,OUTPUT);
@@ -198,6 +198,7 @@ void loop() {
 
           }
         }
+        Serial.println(inputString);
         String* command = splitBySpace(inputString);
 
         //Update desired angles
@@ -205,94 +206,91 @@ void loop() {
           desiredAngles[i] = radians(command[i].toDouble());
         }
         throttleIncrement = command[3].toDouble();
+        throttle+=throttleIncrement;
+        throttleIncrement = 0;
 
         inputString = "";
         stringEnd = false;
-  }
+
+        // Serial.print(throttle);
+        // Serial.print("  ");
+        // for(int i=0;i<3;i++){
+        //   Serial.print(desiredAngles[i]);
+        //   Serial.print("  ");
+        }
+        // Serial.println("");
+
 
   // Read Sensor data
-    current_time = micros();
-    data = getFilteredData(5);
+    // current_time = micros();
+    // data = getFilteredData(5);
 
 
-    // Calculate angles
-    dt = (current_time-previous_time)*pow(10,-6);
-    //Integrated Angles
-    for(int i=0;i<3;i++){
-      integratedAngles[i]+=dt*(data[i+3]-offsets[i+3]);
-    }
+    // // Calculate angles
+    // dt = (current_time-previous_time)*pow(10,-6);
+    // //Integrated Angles
+    // for(int i=0;i<3;i++){
+    //   integratedAngles[i]+=dt*(data[i+3]-offsets[i+3]);
+    // }
 
-    //Angles from triginometry/Acceletration
-    if(orientation == 2){
-      if(data[0]==0){
-        accAngles[1] = 3.14/2;
-        accAngles[2] = 3.14/2;
-      }else{
-            accAngles[2] = atan(data[1]/data[0]);
-            accAngles[1] = atan(data[2]/data[0]);
-      }
-    }
-    //Sign correction
-    if(orientation==2){
-      // double temp=integratedAngles[0];
-      accAngles[2] = -accAngles[2];
-      // integratedAngles[0] = -temp;
-    }
-    // accAngles[0] = integratedAngles[0];
-    // //Complementary filter
-    for(int i=1; i<3; i++){
-      currentAngles[i] = alpha*integratedAngles[i] + (1-alpha)*accAngles[i];
-    }
-    currentAngles[0] = integratedAngles[0];
+    // //Angles from triginometry/Acceletration
+    // if(orientation == 2){
+    //   if(data[0]==0){
+    //     accAngles[1] = 3.14/2;
+    //     accAngles[2] = 3.14/2;
+    //   }else{
+    //         accAngles[2] = atan(data[1]/data[0]);
+    //         accAngles[1] = atan(data[2]/data[0]);
+    //   }
+    // }
+    // //Sign correction
+    // if(orientation==2){
+    //   // double temp=integratedAngles[0];
+    //   accAngles[2] = -accAngles[2];
+    //   // integratedAngles[0] = -temp;
+    // }
+    // // accAngles[0] = integratedAngles[0];
+    // // //Complementary filter
+    // for(int i=1; i<3; i++){
+    //   currentAngles[i] = alpha*integratedAngles[i] + (1-alpha)*accAngles[i];
+    // }
+    // currentAngles[0] = integratedAngles[0];
 
-    // PID control
+    // // PID control
 
-    
-    throttle+=throttleIncrement;
-    throttleIncrement = 0;
 
-    // Finding errors in angles
-    for(int i =0;i<3;i++){
-      current_errors[i] = currentAngles[i]-desiredAngles[i];
-    }
+    // // Finding errors in angles
+    // for(int i =0;i<3;i++){
+    //   current_errors[i] = currentAngles[i]-desiredAngles[i];
+    // }
 
-    // // Find rate outputs:
-    for(int i=0;i<3;i++){
-      P_terms[i] = P*current_errors[i];
-      I_terms[i] = I_terms[i]+I*current_errors[i]*dt;
-      D_terms[i] = (current_errors[i]-previous_errors[i])/dt;
+    // // // Find rate outputs:
+    // for(int i=0;i<3;i++){
+    //   P_terms[i] = P*current_errors[i];
+    //   I_terms[i] = I_terms[i]+I*current_errors[i]*dt;
+    //   D_terms[i] = (current_errors[i]-previous_errors[i])/dt;
 
-      // rate_outputs[i] = P_terms[i]+I_terms[i]+D_terms[i];
-      rate_outputs[i] = P_terms[i];
-      // Serial.print(rate_outputs[i]);
-      // Serial.print(" ");
-    }
-    // Serial.println("");
-    //calculate motor inputs
-    motor_inputs[0] = (throttle-rate_outputs[0]-rate_outputs[1]+rate_outputs[2])*255;
-    motor_inputs[1] = (throttle-rate_outputs[0]+rate_outputs[1]-rate_outputs[2])*255;
-    motor_inputs[2] = (throttle+rate_outputs[0]+rate_outputs[1]+rate_outputs[2])*255;
-    motor_inputs[3] = (throttle+rate_outputs[0]-rate_outputs[1]-rate_outputs[2])*255;
+    //   rate_outputs[i] = P_terms[i];
+    // }
+    // //calculate motor inputs
+    // motor_inputs[0] = (throttle-rate_outputs[0]-rate_outputs[1]+rate_outputs[2])*255;
+    // motor_inputs[1] = (throttle-rate_outputs[0]+rate_outputs[1]-rate_outputs[2])*255;
+    // motor_inputs[2] = (throttle+rate_outputs[0]+rate_outputs[1]+rate_outputs[2])*255;
+    // motor_inputs[3] = (throttle+rate_outputs[0]-rate_outputs[1]-rate_outputs[2])*255;
 
-    //Give motor inputs
-    for(int i=0;i<4;i++){
-      if(motor_inputs[i]<0){
-        motor_inputs[i] = 0;
-      }
-      else if(motor_inputs[i]>255){
-        motor_inputs[i] = 255;
-      }
-      Serial.print(motor_inputs[i]);
-      Serial.print(" ");
-    }
-    Serial.println("");
+    // //Give motor inputs
+    // for(int i=0;i<4;i++){
+    //   if(motor_inputs[i]<0){
+    //     motor_inputs[i] = 0;
+    //   }
+    //   else if(motor_inputs[i]>255){
+    //     motor_inputs[i] = 255;
+    //   }
+    // }
 
-    // Serial.print("Errors: ");
-    for(int i=0;i<3;i++){
-      // Serial.print(current_errors[i]);
-      // Serial.print(" ");
-      previous_errors[i] = current_errors[i];
-    }
-    // Serial.println("");
-    previous_time = current_time;
+    // for(int i=0;i<3;i++){
+
+    //   previous_errors[i] = current_errors[i];
+    // }
+    // previous_time = current_time;
 }

@@ -122,7 +122,7 @@ class _ControllerScreenState extends State<ControllerScreen> {
                              const SizedBox(width: 8),
                              Text(
                                'DEMO MODE',
-                               style: GoogleFonts.orbitron(
+                               style: const TextStyle(
                                  color: Colors.white,
                                  fontSize: 12,
                                  fontWeight: FontWeight.bold,
@@ -144,20 +144,20 @@ class _ControllerScreenState extends State<ControllerScreen> {
                           flex: 1,
                           child: Column(
                             children: [
-                              // Yaw Joystick
-                              Expanded(
-                                flex: 3,
-                                child: Container(
-                                  margin: const EdgeInsets.all(4),
-                                  child: _buildYawJoystick(),
-                                ),
-                              ),
                               // Throttle Slider
                               Expanded(
                                 flex: 2,
                                 child: Container(
                                   margin: const EdgeInsets.all(4),
                                   child: _buildThrottleSlider(),
+                                ),
+                              ),
+                              // Yaw Joystick
+                              Expanded(
+                                flex: 1,
+                                child: Container(
+                                  margin: const EdgeInsets.all(4),
+                                  child: _buildYawJoystick(),
                                 ),
                               ),
                             ],
@@ -207,8 +207,8 @@ class _ControllerScreenState extends State<ControllerScreen> {
         children: [
           Text(
             'THROTTLE',
-            style: GoogleFonts.orbitron(
-              color: const Color(0xFF00BCD4),
+            style: const TextStyle(
+              color: Color(0xFF00BCD4),
               fontSize: 16,
               fontWeight: FontWeight.bold,
             ),
@@ -216,13 +216,13 @@ class _ControllerScreenState extends State<ControllerScreen> {
           const SizedBox(height: 10),
           Text(
             '${throttle.round()}%',
-            style: GoogleFonts.orbitron(
+            style: const TextStyle(
               color: Colors.white,
               fontSize: 24,
               fontWeight: FontWeight.bold,
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 10),
           Expanded(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -270,8 +270,8 @@ class _ControllerScreenState extends State<ControllerScreen> {
         children: [
           Text(
             'YAW',
-            style: GoogleFonts.orbitron(
-              color: const Color(0xFF4CAF50),
+            style: const TextStyle(
+              color: Color(0xFF4CAF50),
               fontSize: 16,
               fontWeight: FontWeight.bold,
             ),
@@ -279,7 +279,7 @@ class _ControllerScreenState extends State<ControllerScreen> {
           const SizedBox(height: 10),
           Text(
             '${yaw.round()}°',
-            style: GoogleFonts.orbitron(
+            style: const TextStyle(
               color: Colors.white,
               fontSize: 18,
             ),
@@ -289,7 +289,7 @@ class _ControllerScreenState extends State<ControllerScreen> {
             child: GestureDetector(
               onPanUpdate: (details) {
                 setState(() {
-                  yaw = (details.delta.dy * 2).clamp(-25.0, 25.0);
+                  yaw = (details.delta.dx * 15).clamp(-25.0, 25.0);
                 });
               },
               onPanEnd: (details) {
@@ -304,22 +304,15 @@ class _ControllerScreenState extends State<ControllerScreen> {
                 ),
                 child: Center(
                   child: Transform.translate(
-                    offset: Offset(0, yaw * 2),
+                    offset: Offset(yaw * 4, 0),
                     child: Container(
                       width: 60,
                       height: 60,
                       decoration: BoxDecoration(
                         color: const Color(0xFF4CAF50),
                         borderRadius: BorderRadius.circular(30),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFF4CAF50).withOpacity(0.3),
-                            blurRadius: 10,
-                            spreadRadius: 2,
-                          ),
-                        ],
                       ),
-                      child: Icon(
+                      child: const Icon(
                         Icons.rotate_right,
                         color: Colors.white,
                         size: 30,
@@ -347,8 +340,8 @@ class _ControllerScreenState extends State<ControllerScreen> {
         children: [
           Text(
             'PITCH & ROLL',
-            style: GoogleFonts.orbitron(
-              color: const Color(0xFFFF9800),
+            style: const TextStyle(
+              color: Color(0xFFFF9800),
               fontSize: 16,
               fontWeight: FontWeight.bold,
             ),
@@ -359,14 +352,14 @@ class _ControllerScreenState extends State<ControllerScreen> {
             children: [
               Text(
                 'P: ${pitch.round()}°',
-                style: GoogleFonts.orbitron(
+                style: const TextStyle(
                   color: Colors.white,
                   fontSize: 14,
                 ),
               ),
               Text(
                 'R: ${roll.round()}°',
-                style: GoogleFonts.orbitron(
+                style: const TextStyle(
                   color: Colors.white,
                   fontSize: 14,
                 ),
@@ -378,8 +371,8 @@ class _ControllerScreenState extends State<ControllerScreen> {
             child: GestureDetector(
               onPanUpdate: (details) {
                 setState(() {
-                  pitch = (details.delta.dy * 2).clamp(-25.0, 25.0);
-                  roll = (details.delta.dx * 2).clamp(-25.0, 25.0);
+                  pitch = (details.delta.dy * 15).clamp(-25.0, 25.0);
+                  roll = (details.delta.dx * 15).clamp(-25.0, 25.0);
                 });
               },
               onPanEnd: (details) {
@@ -395,22 +388,15 @@ class _ControllerScreenState extends State<ControllerScreen> {
                 ),
                 child: Center(
                   child: Transform.translate(
-                    offset: Offset(roll * 2, pitch * 2),
+                    offset: Offset(roll * 4, pitch * 4),
                     child: Container(
                       width: 80,
                       height: 80,
                       decoration: BoxDecoration(
                         color: const Color(0xFFFF9800),
                         borderRadius: BorderRadius.circular(40),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFFFF9800).withOpacity(0.3),
-                            blurRadius: 10,
-                            spreadRadius: 2,
-                          ),
-                        ],
                       ),
-                      child: Icon(
+                      child: const Icon(
                         Icons.flight,
                         color: Colors.white,
                         size: 40,
@@ -433,40 +419,33 @@ class _ControllerScreenState extends State<ControllerScreen> {
       decoration: BoxDecoration(
         color: Colors.red,
         borderRadius: BorderRadius.circular(50),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.red.withOpacity(0.3),
-            blurRadius: 20,
-            spreadRadius: 5,
-          ),
-        ],
       ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          borderRadius: BorderRadius.circular(60),
+          borderRadius: BorderRadius.circular(50),
           onTap: _sendStop,
-                              child: Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.stop,
-                            color: Colors.white,
-                            size: 35,
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            'STOP',
-                            style: GoogleFonts.orbitron(
-                              color: Colors.white,
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(
+                  Icons.stop,
+                  color: Colors.white,
+                  size: 35,
+                ),
+                const SizedBox(height: 6),
+                const Text(
+                  'STOP',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );

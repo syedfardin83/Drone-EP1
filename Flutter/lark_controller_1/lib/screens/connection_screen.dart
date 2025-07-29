@@ -78,17 +78,17 @@ class _ConnectionScreenState extends State<ConnectionScreen> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: const Color(0xFF1A1A1A),
-        title: Text(
-          'Demo Mode',
-          style: GoogleFonts.orbitron(
-            color: const Color(0xFF00BCD4),
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        content: Text(
-          'Bluetooth functionality is temporarily disabled for compatibility. You can test the controller UI in demo mode.',
-          style: GoogleFonts.orbitron(color: Colors.white70),
-        ),
+                 title: Text(
+           'Demo Mode',
+           style: const TextStyle(
+             color: Color(0xFF00BCD4),
+             fontWeight: FontWeight.bold,
+           ),
+         ),
+         content: Text(
+           'Bluetooth functionality is temporarily disabled for compatibility. You can test the controller UI in demo mode.',
+           style: const TextStyle(color: Colors.white70),
+         ),
         actions: [
           TextButton(
             onPressed: () {
@@ -99,10 +99,10 @@ class _ConnectionScreenState extends State<ConnectionScreen> {
                 ),
               );
             },
-            child: Text(
-              'Enter Demo Mode',
-              style: GoogleFonts.orbitron(color: const Color(0xFF00BCD4)),
-            ),
+                         child: Text(
+               'Enter Demo Mode',
+               style: const TextStyle(color: Color(0xFF00BCD4)),
+             ),
           ),
         ],
       ),
@@ -142,16 +142,16 @@ class _ConnectionScreenState extends State<ConnectionScreen> {
                   // Header
                   Text(
                     'LARK1 CONTROLLER',
-                    style: GoogleFonts.orbitron(
+                    style: const TextStyle(
                       fontSize: 32,
                       fontWeight: FontWeight.bold,
-                      color: const Color(0xFF00BCD4),
+                      color: Color(0xFF00BCD4),
                     ),
                   ),
                   const SizedBox(height: 20),
                   Text(
                     'Connect to your drone',
-                    style: GoogleFonts.orbitron(
+                    style: const TextStyle(
                       fontSize: 18,
                       color: Colors.white70,
                     ),
@@ -184,16 +184,16 @@ class _ConnectionScreenState extends State<ConnectionScreen> {
                                   ),
                                 ),
                                 const SizedBox(width: 10),
-                                Text(
-                                  'Scanning...',
-                                  style: GoogleFonts.orbitron(fontSize: 16),
-                                ),
+                                                                 Text(
+                                   'Scanning...',
+                                   style: const TextStyle(fontSize: 16),
+                                 ),
                               ],
                             )
-                          : Text(
-                              'Scan for Devices',
-                              style: GoogleFonts.orbitron(fontSize: 16),
-                            ),
+                                                       : Text(
+                                 'Scan for Devices',
+                                 style: const TextStyle(fontSize: 16),
+                               ),
                     ),
                   ),
                   const SizedBox(height: 30),
@@ -206,30 +206,7 @@ class _ConnectionScreenState extends State<ConnectionScreen> {
                         borderRadius: BorderRadius.circular(15),
                         border: Border.all(color: const Color(0xFF333333)),
                       ),
-                                             child: false
-                          ? Center(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.bluetooth_searching,
-                                    size: 64,
-                                    color: Colors.white54,
-                                  ),
-                                  const SizedBox(height: 16),
-                                  Text(
-                                    isScanning
-                                        ? 'Searching for LARK1 devices...'
-                                        : 'No devices found',
-                                    style: GoogleFonts.orbitron(
-                                      color: Colors.white54,
-                                      fontSize: 16,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            )
-                                                     : Center(
+                                             child: Center(
                                child: Column(
                                  mainAxisAlignment: MainAxisAlignment.center,
                                  children: [
@@ -241,7 +218,7 @@ class _ConnectionScreenState extends State<ConnectionScreen> {
                                    const SizedBox(height: 16),
                                    Text(
                                      'Bluetooth temporarily disabled',
-                                     style: GoogleFonts.orbitron(
+                                     style: const TextStyle(
                                        color: Colors.white54,
                                        fontSize: 16,
                                      ),
@@ -249,7 +226,7 @@ class _ConnectionScreenState extends State<ConnectionScreen> {
                                    const SizedBox(height: 8),
                                    Text(
                                      'Tap "Scan for Devices" to enter demo mode',
-                                     style: GoogleFonts.orbitron(
+                                     style: const TextStyle(
                                        color: Colors.white38,
                                        fontSize: 12,
                                      ),
