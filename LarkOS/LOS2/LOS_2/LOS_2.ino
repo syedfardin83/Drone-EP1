@@ -4,6 +4,11 @@
 //2. MPU6050 Sensor input and processing
 //3. PID
 
+//  Axis mapping:
+//  x-axis : yaw
+//  y-axis : pitch
+// z-axis : roll
+
 //  Importing modules
 #include "BluetoothSerial.h"
 #include <math.h>
@@ -34,6 +39,7 @@ double throttle = 0;
 double* offsets;
 double integratedAngles[3] = {0,0,0};
 double accAngles[3] = {0,0,0};
+double compAngles[3] = {0,0,0};
 double alpha = 0.98;
 
 //MPU
@@ -54,10 +60,9 @@ double rate_outputs[3] = {0,0,0};
 int motor_inputs[4] = {0,0,0,0};
 
 // Time variables
-unsigned long previous_time = 0;
-unsigned long current_time = 0;
+TickType_t prev_tick;
+TickType_t curr_tick;
 double dt;
-
 #define bt_name "LOS 2.0"
 
 String* splitBySpace(String str){
@@ -164,10 +169,13 @@ void BT_update_task(void *param){
   }
 }
 
-void mpu_read_task(void *param){
+void mpu_read_pid_task(void *param){
   Serial.println("Entered MPU task");
+
+  //MPU first
   int i;
   while(1){
+    prev_tick = xTaskGetTickCount();
     mpu_data = getFilteredData(5);
     for(i=0;i<6;i++){
       Serial.print(mpu_data[i]);
@@ -175,8 +183,30 @@ void mpu_read_task(void *param){
     }
     Serial.println("");
     vTaskDelay(10/portTICK_PERIOD_MS);
+    curr_tick = xTaskGetTickCount();
+    dt = ((curr_tick-prev_tick)*portTICK_PERIOD_MS)/1000;
 
-    //Implementing complementary filter:
+    //  Finding integrated angles
+    for(i=0;i<3;i++){
+      integratedAngles[i]+=dt*(mpu_data[i+3]-offsets[i+3]);
+    }
+
+    //  Finding the acc Angles
+    accAngles[0] = -integratedAngles[0];
+    if(mpu_data[0]==0){
+      accAngles[1] = 3.14/2;
+      accAngles[2] = 3.14/2;     
+    }else{
+      accAngles[1] = atan(mpu_data[2]/mpu_data[0]);
+      accAngles[2] = atan(mpu_data[1]/mpu_data[0]);
+    }
+
+    //  Complementary Filter:
+    for(i=0;i<3;i++){
+      compAngles[i] = alpha*integratedAngles[i] + (1-alpha)*accAngles[i];
+    }
+
+    
   }
 }
 
@@ -203,8 +233,8 @@ void setup() {
 
     //Create and run MPU task
   xTaskCreatePinnedToCore(
-    mpu_read_task,
-    "mpu_read_task",
+    mpu_read_pid_task,
+    "mpu_read_pid_task",
     2048,
     NULL,
     1,
