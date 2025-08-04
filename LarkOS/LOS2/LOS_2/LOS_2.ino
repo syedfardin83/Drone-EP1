@@ -7,6 +7,9 @@
 //  Importing modules
 #include "BluetoothSerial.h"
 #include <math.h>
+#include <Adafruit_MPU6050.h>
+#include <Adafruit_Sensor.h>
+#include <Wire.h>
 
 //  Defining App CPU  
 #if CONFIG_FREERTOS_UNICORE
@@ -17,6 +20,7 @@ static const int app_cpu = 1;
 
 //  Software Objects
 BluetoothSerial SerialBT;
+Adafruit_MPU6050 mpu;
 
 //  BT read variables
 String inputString = "";
@@ -27,7 +31,32 @@ char ch;
 double desiredAngles[3] = {0,0,0};
 double throttleIncrement = 0;
 double throttle = 0;
+double* offsets;
+double integratedAngles[3] = {0,0,0};
+double accAngles[3] = {0,0,0};
+double alpha = 0.98;
 
+//MPU
+#define SCL_PIN 17
+#define SDA_PIN 26
+double* mpu_data;
+
+// PID variables
+double P=0.09,I=0.01,D=0.01;
+double P_terms[3] = {0,0,0};
+double I_terms[3] = {0,0,0};
+double D_terms[3] = {0,0,0};
+double current_errors[3] = {0,0,0};
+double previous_errors[3] = {0,0,0};
+double rate_outputs[3] = {0,0,0};
+
+// Motor inputs
+int motor_inputs[4] = {0,0,0,0};
+
+// Time variables
+unsigned long previous_time = 0;
+unsigned long current_time = 0;
+double dt;
 
 #define bt_name "LOS 2.0"
 
@@ -50,6 +79,60 @@ String* splitBySpace(String str){
   return words;
 }
 
+double* getData(){
+  /* Get new sensor events with the readings */
+  sensors_event_t a, g, temp;
+  mpu.getEvent(&a, &g, &temp);
+  static double arr[6];
+  arr[0] = a.acceleration.x;
+  arr[1] = a.acceleration.y;
+  arr[2] = a.acceleration.z;
+
+  arr[3] = g.gyro.x;
+  arr[4] = g.gyro.y;
+  arr[5] = g.gyro.z;
+  return arr;
+  // AccX = a.acceleration.x
+  // return [a.acceleration.x,a.acceleration.y,a.acceleration.z,a.gyro.x,a.gyro.y,a.gyro.z];
+  // double data[6] = {a.acceleration.x, a.acceleration.y, a.acceleration.z, a.gyro.x, a.gyro.y, a.gyro.z};
+}
+
+double* getFilteredData(int n){
+  double sums[6] = {0,0,0,0,0,0};
+
+  static double avgs[6];
+
+  //Finding sums
+  for(int i=1; i<=n; i++){
+    static double* data;
+    data = getData();
+    for(int j=0; j<6; j++){
+      sums[j] = sums[j]+data[j];
+    }
+  }
+
+  //Finding avgs
+  for(int i=0; i<6; i++){
+    avgs[i] = sums[i]/n;
+  }
+
+  return avgs;
+}
+
+double* calliberateSensor(){
+  static double offsets[6];
+  static double* data;
+  data = getFilteredData(5);
+
+  for(int i=0; i<6; i++){
+    offsets[i] = data[i];
+  }
+
+  return offsets;
+}
+
+
+//  FreeRTOS Tasks
 void BT_update_task(void *param){
   Serial.println("Entered the bluetooth task");
   int i;
@@ -71,39 +154,74 @@ void BT_update_task(void *param){
         desiredAngles[i] = radians(commands[i].toDouble());
       }
       throttleIncrement = commands[3].toDouble();
-      throttle+=throttleIncrement;
+      throttle+=(throttleIncrement*0.1);
       throttleIncrement = 0;
-
-      for(i=0;i<3;i++){
-        Serial.print(degrees(desiredAngles[i]));
-        Serial.print("  ");
-      }
-      Serial.println(throttle);
 
       inputString = "";
       stringEnd = false;
     }
+    vTaskDelay(10/portTICK_PERIOD_MS);
   }
 }
 
+void mpu_read_task(void *param){
+  Serial.println("Entered MPU task");
+  int i;
+  while(1){
+    mpu_data = getFilteredData(5);
+    for(i=0;i<6;i++){
+      Serial.print(mpu_data[i]);
+      Serial.print("  ");
+    }
+    Serial.println("");
+    vTaskDelay(10/portTICK_PERIOD_MS);
+
+    //Implementing complementary filter:
+  }
+}
 
 void setup() {
-
   SerialBT.begin(bt_name);
   Serial.begin(115200);
   delay(100);
 
-  //Create and run BT task
+    //Initialize MPU6050
+  Wire.begin(SDA_PIN,SCL_PIN);
+  if (!mpu.begin()) {
+    Serial.println("Failed to find MPU6050 chip");
+    while (1) {
+      delay(10);
+    }
+  }
+  mpu.setAccelerometerRange(MPU6050_RANGE_16_G);
+  mpu.setGyroRange(MPU6050_RANGE_250_DEG);
+  mpu.setFilterBandwidth(MPU6050_BAND_21_HZ);
+  delay(100);
+
+  //Calliberate sensor
+  offsets = calliberateSensor();
+
+    //Create and run MPU task
   xTaskCreatePinnedToCore(
-    BT_update_task,
-    "Bluetooth read and update",
+    mpu_read_task,
+    "mpu_read_task",
     2048,
     NULL,
     1,
     NULL,
     app_cpu
   );
-  
+  delay(100);
+  //Create and run BT task
+  xTaskCreatePinnedToCore(
+    BT_update_task,
+    "Bluetooth read and update",
+    2048,
+    NULL,
+    2,
+    NULL,
+    app_cpu
+  );
 
 }
 

@@ -1,7 +1,7 @@
 import serial
 import time
 
-esp32 = serial.Serial('COM6', 115200, timeout=1)
+esp32 = serial.Serial('COM5', 115200, timeout=1)
 time.sleep(0.1)  # Small delay to avoid overwhelming the ESP32
 
 while True:

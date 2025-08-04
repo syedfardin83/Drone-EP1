@@ -48,6 +48,9 @@ void loop() {
   analogWrite(green_pin,0);
   analogWrite(blue_pin,0);
   while(!BTSerial.hasClient()){
+    for(int i=0;i<4;i++){
+      analogWrite(motor_pins[i],0);
+    }
     analogWrite(blue_pin,0);
     delay(500);
     analogWrite(blue_pin,150);
@@ -70,6 +73,7 @@ void loop() {
     delay(50);
     analogWrite(green_pin,0);
         // throttle+=ceil(commands[3].toDouble()*5);
+        throttle = msg.toInt();
         Serial.print(msg);
         Serial.println("");
     msg="";
@@ -84,6 +88,7 @@ void loop() {
         continue;
       }
       analogWrite(motor_pins[i],throttle);
+      Serial.println(throttle);
       
     }
 } 

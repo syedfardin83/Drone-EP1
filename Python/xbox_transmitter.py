@@ -48,9 +48,9 @@ while True:
         j += 1
         continue
 
-    values[0] = (axis_values[0]-offsets[0])*45
-    values[1] = (axis_values[2]-offsets[2])*30
-    values[2] = (axis_values[3]-offsets[3])*30
+    values[2] = (axis_values[0]-offsets[0])*45  #yaw
+    values[0] = (axis_values[2]-offsets[2])*30  #roll
+    values[1] = (axis_values[3]-offsets[3])*30  #pitch
     values[3] = (axis_values[1]-offsets[1])
 
     str=""
