@@ -7,7 +7,7 @@
 //  Axis mapping:
 //  x-axis : yaw
 //  y-axis : pitch
-// z-axis : roll
+//  z-axis : roll 
 
 //  Importing modules
 #include "BluetoothSerial.h"
@@ -206,7 +206,30 @@ void mpu_read_pid_task(void *param){
       compAngles[i] = alpha*integratedAngles[i] + (1-alpha)*accAngles[i];
     }
 
+    //  PID
+    //Find errors
+    for(i=0;i<3;i++){
+      current_errors[i] = compAngles[i]-desiredAngle[i];
+    }
+    prev_tick = xTaskGetTickCount();
+
+    //Find rate outputs
+    //****************** dt not properly calculated *****************************
+    for(i=0;i<3;i++){
+      P_terms[i] = P*current_errors[i];
+      I_terms[i] = I_terms[i]+I*current_errors[i]*dt;
+      D_terms[i] = (current_errors[i]-previous_errors[i])/dt;
+
+      rate_outputs[i] = P_terms[i];
+    }
     
+    motor_inputs[0] = (throttle+rate_outputs[1]-rate_outputs[2]+rate_outputs[0])*255;
+    motor_inputs[1] = (throttle+rate_outputs[1]+rate_outputs[2]-rate_outputs[0])*255;
+    motor_inputs[2] = (throttle-rate_outputs[1]+rate_outputs[2]+rate_outputs[0])*255;
+    motor_inputs[3] = (throttle-rate_outputs[1]-rate_outputs[2]-rate_outputs[0])*255;
+
+    // **************** Give motor inputs - waiting ****************************
+
   }
 }
 
