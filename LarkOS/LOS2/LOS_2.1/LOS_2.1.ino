@@ -265,6 +265,9 @@ void calculate_angles_task(void *param){
 
 void pid_task(void *param){
   double current_angles[3]; double desired_angles_loacal[3]; double throttle_local;
+  static TickType_t last_tick;
+  static TickType_t curr_tick;
+  double dt2;
   while(1){
     //  Read Queues
     if(xQueueReceive(current_anglesQ,&current_angles,3)!=pdTRUE){
@@ -280,25 +283,28 @@ void pid_task(void *param){
     }
 
     //Find errors
+    prev_tick = xTaskGetTickCount();
     for(i=0;i<3;i++){
       current_errors[i] = current_angles[i]-desired_angles_loacal[i];
     }
-    prev_tick = xTaskGetTickCount();
+    curr_tick = xTaskGetTickCount();
+    dt2 = ((curr_tick-last_tick)*portTICK_PERIOD_MS)/1000;
+
 
     //Find rate outputs
     //****************** dt not properly calculated *****************************
     for(i=0;i<3;i++){
       P_terms[i] = P*current_errors[i];
-      I_terms[i] = I_terms[i]+I*current_errors[i]*dt;
-      D_terms[i] = (current_errors[i]-previous_errors[i])/dt;
+      I_terms[i] = I_terms[i]+I*current_errors[i]*dt2;
+      D_terms[i] = (current_errors[i]-previous_errors[i])/dt2;
 
       rate_outputs[i] = P_terms[i];
     }
     
-    motor_inputs[0] = (throttle+rate_outputs[1]-rate_outputs[2]+rate_outputs[0])*255;
-    motor_inputs[1] = (throttle+rate_outputs[1]+rate_outputs[2]-rate_outputs[0])*255;
-    motor_inputs[2] = (throttle-rate_outputs[1]+rate_outputs[2]+rate_outputs[0])*255;
-    motor_inputs[3] = (throttle-rate_outputs[1]-rate_outputs[2]-rate_outputs[0])*255;
+    motor_inputs[0] = (throttle_local+rate_outputs[1]-rate_outputs[2]+rate_outputs[0])*255;
+    motor_inputs[1] = (throttle_local+rate_outputs[1]+rate_outputs[2]-rate_outputs[0])*255;
+    motor_inputs[2] = (throttle_local-rate_outputs[1]+rate_outputs[2]+rate_outputs[0])*255;
+    motor_inputs[3] = (throttle_local-rate_outputs[1]-rate_outputs[2]-rate_outputs[0])*255;
 
     // **************** Give motor inputs - waiting ****************************
   }
@@ -353,10 +359,20 @@ void setup() {
     NULL,
     app_cpu
   );
-  //Create and run BT task
+  //Create and run Calculate Angles task
   xTaskCreatePinnedToCore(
     calculate_angles_task,
     "Calculate Angles",
+    2048,
+    NULL,
+    2,
+    NULL,
+    app_cpu
+  );
+  //Create and run PID task
+  xTaskCreatePinnedToCore(
+    pid_task,
+    "PID",
     2048,
     NULL,
     2,
