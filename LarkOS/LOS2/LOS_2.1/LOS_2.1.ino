@@ -9,6 +9,10 @@
 //  y-axis : pitch
 //  z-axis : roll 
 
+//ToDO:
+//vTaskDelay after every task
+//Proper heap memory allocation for each task
+
 //  Importing modules
 #include "BluetoothSerial.h"
 #include <math.h>
@@ -76,6 +80,9 @@ static uint8_t mpu_dataQ_l = 3;
 
 static QueueHandle_t dt1Q;
 static uint8_t dt1Q_l = 3;
+
+static QueueHandle_t current_anglesQ;
+static uint8_t current_anglesQ_l = 3;
 
 
 String* splitBySpace(String str){
@@ -195,7 +202,7 @@ void mpu_read_pid_task(void *param){
   static TickType_t last_tick;
   static TickType_t curr_tick;
   int i;
-  
+
   while(1){
     // prev_tick = xTaskGetTickCount();
     last_tick = xTaskGetTickCount();
@@ -217,6 +224,86 @@ void mpu_read_pid_task(void *param){
   }
 }
 
+void calculate_angles_task(void *param){
+  double dt1; double mpu_data_local[6];int i;
+  while(1){
+    //  Read Queues
+    if(xQueueReceive(dt1Q,&dt1,3)!=pdTRUE){
+      Serial.println("Failed to read dt1Q");
+    }
+    
+    if(xQueueReceive(mpu_dataQ,&mpu_data_local,3) != pdTRUE){
+      Serial.println("Failed to read mpu_dataQ");
+    }
+
+    //  Integrate Angles
+    for(i=0;i<3;i++){
+      integratedAngles[i]+=dt1*(mpu_data_local[i+3]-offsets[i+3]);
+    }
+
+    //  Acc angles
+    accAngles[0] = -integratedAngles[0];
+    if(mpu_data[0]==0){
+      accAngles[1] = 3.14/2;
+      accAngles[2] = 3.14/2;     
+    }else{
+      accAngles[1] = atan(mpu_data_local[2]/mpu_data_local[0]);
+      accAngles[2] = atan(mpu_data_local[1]/mpu_data_local[0]);
+    }
+
+    //  Complementary filter
+    for(i=0;i<3;i++){
+      compAngles[i] = alpha*integratedAngles[i] + (1-alpha)*accAngles[i];
+    }
+
+    //  Update Queue
+    if(xQueueSend(current_anglesQ,&compAngles,3)!=pdTRUE){
+      Serial.println("current_anglesQ full!");
+    }
+  }
+}
+
+void pid_task(void *param){
+  double current_angles[3]; double desired_angles_loacal[3]; double throttle_local;
+  while(1){
+    //  Read Queues
+    if(xQueueReceive(current_anglesQ,&current_angles,3)!=pdTRUE){
+      Serial.println("Failed to read current_anglesQ");
+    }
+
+    if(xQueueReceive(desiredAnglesQ,&desired_angles_loacal,3)!=pdTRUE){
+      Serial.println("Failed to read desiredAnglesQ");
+    }
+
+    if(xQueueReceive(throttleQ,&throttle_local,3)!=pdTRUE){
+      Serial.println("Failed to read throttleQ");
+    }
+
+    //Find errors
+    for(i=0;i<3;i++){
+      current_errors[i] = current_angles[i]-desired_angles_loacal[i];
+    }
+    prev_tick = xTaskGetTickCount();
+
+    //Find rate outputs
+    //****************** dt not properly calculated *****************************
+    for(i=0;i<3;i++){
+      P_terms[i] = P*current_errors[i];
+      I_terms[i] = I_terms[i]+I*current_errors[i]*dt;
+      D_terms[i] = (current_errors[i]-previous_errors[i])/dt;
+
+      rate_outputs[i] = P_terms[i];
+    }
+    
+    motor_inputs[0] = (throttle+rate_outputs[1]-rate_outputs[2]+rate_outputs[0])*255;
+    motor_inputs[1] = (throttle+rate_outputs[1]+rate_outputs[2]-rate_outputs[0])*255;
+    motor_inputs[2] = (throttle-rate_outputs[1]+rate_outputs[2]+rate_outputs[0])*255;
+    motor_inputs[3] = (throttle-rate_outputs[1]-rate_outputs[2]-rate_outputs[0])*255;
+
+    // **************** Give motor inputs - waiting ****************************
+  }
+}
+
 void setup() {
   SerialBT.begin(bt_name);
   Serial.begin(115200);
@@ -227,6 +314,7 @@ void setup() {
   throttleQ = xQueueCreate(throttleQ_l, sizeof(double));
   mpu_dataQ = xQueueCreate(mpu_dataQ_l, sizeof(double)*6);
   dt1Q = xQueueCreate(dt1Q_l, sizeof(double));
+  current_anglesQ = xQueueCreate(current_anglesQ_l, sizeof(double)*3);
 
   //  Initialize MPU6050
   Wire.begin(SDA_PIN,SCL_PIN);
@@ -259,6 +347,16 @@ void setup() {
   xTaskCreatePinnedToCore(
     BT_update_task,
     "Bluetooth read and update",
+    2048,
+    NULL,
+    1,
+    NULL,
+    app_cpu
+  );
+  //Create and run BT task
+  xTaskCreatePinnedToCore(
+    calculate_angles_task,
+    "Calculate Angles",
     2048,
     NULL,
     2,
