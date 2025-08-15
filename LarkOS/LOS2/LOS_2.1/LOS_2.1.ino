@@ -60,10 +60,23 @@ double rate_outputs[3] = {0,0,0};
 int motor_inputs[4] = {0,0,0,0};
 
 // Time variables
-TickType_t prev_tick;
-TickType_t curr_tick;
-double dt;
+double dt1;
+
 #define bt_name "LOS 2.0"
+
+//  FreeRTOS Queues
+static QueueHandle_t desiredAnglesQ;
+static uint8_t desiredAnglesQ_l = 3;
+
+static QueueHandle_t throttleQ;
+static uint8_t throttleQ_l = 3;
+
+static QueueHandle_t mpu_dataQ;
+static uint8_t mpu_dataQ_l = 3;
+
+static QueueHandle_t dt1Q;
+static uint8_t dt1Q_l = 3;
+
 
 String* splitBySpace(String str){
   static String words[10];int i=0;String word = "";int wordIndex = 0;
@@ -161,6 +174,15 @@ void BT_update_task(void *param){
       throttle+=(throttleIncrement*0.1);
       throttleIncrement = 0;
 
+      //  Push to queue
+      if(xQueueSend(desiredAnglesQ, desiredAngles,3) != pdTRUE){
+        Serial.println("desiredAnglesQ full!");
+      }
+
+      if(xQueueSend(throttleQ, &throttle, 3) != pdTRUE){
+        Serial.println("throttle Q full!");
+      }
+
       inputString = "";
       stringEnd = false;
     }
@@ -170,65 +192,28 @@ void BT_update_task(void *param){
 
 void mpu_read_pid_task(void *param){
   Serial.println("Entered MPU task");
-
-  //MPU first
+  static TickType_t last_tick;
+  static TickType_t curr_tick;
   int i;
+  
   while(1){
-    prev_tick = xTaskGetTickCount();
+    // prev_tick = xTaskGetTickCount();
+    last_tick = xTaskGetTickCount();
     mpu_data = getFilteredData(5);
-    for(i=0;i<6;i++){
-      Serial.print(mpu_data[i]);
-      Serial.print("  ");
-    }
-    Serial.println("");
-    vTaskDelay(10/portTICK_PERIOD_MS);
     curr_tick = xTaskGetTickCount();
-    dt = ((curr_tick-prev_tick)*portTICK_PERIOD_MS)/1000;
 
-    //  Finding integrated angles
-    for(i=0;i<3;i++){
-      integratedAngles[i]+=dt*(mpu_data[i+3]-offsets[i+3]);
-    }
-
-    //  Finding the acc Angles
-    accAngles[0] = -integratedAngles[0];
-    if(mpu_data[0]==0){
-      accAngles[1] = 3.14/2;
-      accAngles[2] = 3.14/2;     
-    }else{
-      accAngles[1] = atan(mpu_data[2]/mpu_data[0]);
-      accAngles[2] = atan(mpu_data[1]/mpu_data[0]);
-    }
-
-    //  Complementary Filter:
-    for(i=0;i<3;i++){
-      compAngles[i] = alpha*integratedAngles[i] + (1-alpha)*accAngles[i];
-    }
-
-    //  PID
-    //Find errors
-    for(i=0;i<3;i++){
-      current_errors[i] = compAngles[i]-desiredAngle[i];
-    }
-    prev_tick = xTaskGetTickCount();
-
-    //Find rate outputs
-    //****************** dt not properly calculated *****************************
-    for(i=0;i<3;i++){
-      P_terms[i] = P*current_errors[i];
-      I_terms[i] = I_terms[i]+I*current_errors[i]*dt;
-      D_terms[i] = (current_errors[i]-previous_errors[i])/dt;
-
-      rate_outputs[i] = P_terms[i];
-    }
+    dt1 = ((curr_tick-last_tick)*portTICK_PERIOD_MS)/1000;
     
-    motor_inputs[0] = (throttle+rate_outputs[1]-rate_outputs[2]+rate_outputs[0])*255;
-    motor_inputs[1] = (throttle+rate_outputs[1]+rate_outputs[2]-rate_outputs[0])*255;
-    motor_inputs[2] = (throttle-rate_outputs[1]+rate_outputs[2]+rate_outputs[0])*255;
-    motor_inputs[3] = (throttle-rate_outputs[1]-rate_outputs[2]-rate_outputs[0])*255;
+    //  Push To Queue
+    if(xQueueSend(mpu_dataQ, mpu_data, 3) != pdTRUE){
+      Serial.println("mpu_dataQ full!");
+    }
 
-    // **************** Give motor inputs - waiting ****************************
+    if(xQueueSend(dt1Q, &dt1, 3) != pdTRUE){
+      Serial.println("dt1Q full!");
+    }
 
+    vTaskDelayUntil(&last_tick, 40/portTICK_PERIOD_MS);
   }
 }
 
@@ -237,7 +222,13 @@ void setup() {
   Serial.begin(115200);
   delay(100);
 
-    //Initialize MPU6050
+  //  Intitialize FreeRTOS Queues
+  desiredAnglesQ = xQueueCreate(desiredAnglesQ_l, sizeof(double)*3);
+  throttleQ = xQueueCreate(throttleQ_l, sizeof(double));
+  mpu_dataQ = xQueueCreate(mpu_dataQ_l, sizeof(double)*6);
+  dt1Q = xQueueCreate(dt1Q_l, sizeof(double));
+
+  //  Initialize MPU6050
   Wire.begin(SDA_PIN,SCL_PIN);
   if (!mpu.begin()) {
     Serial.println("Failed to find MPU6050 chip");
